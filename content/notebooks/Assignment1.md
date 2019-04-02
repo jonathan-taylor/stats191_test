@@ -1,0 +1,99 @@
+
+
+**You may discuss homework problems with other students, but you have to prepare the written assignments yourself.**
+
+**Please combine all your answers, the computer code and the figures into one PDF file, and submit a copy to your folder on canvas.**
+
+**Grading scheme: 10 points per question, total of 40.**
+ 
+**Due date: 11:59 PM January 18, 2019 (Friday evening).**
+
+# Question 1
+
+On Groundhog Day, February 2, a famous groundhog in Punxsutawney, PA is used to predict whether a winter will be long or not based on whether or not he sees his shadow. I collected data on whether he saw his shadow or not from [here](http://www.stormfax.com/ghogday.htm). I stored some of this data in this [table](http://stats191.stanford.edu/data/groundhog.table).
+
+Although Phil is on the East Coast,
+I wondered if the information says anything about whether or not we will experience
+a rainy winter out here in California. For this, I found rainfall data, and saved it in a 
+[table](http://stats191.stanford.edu/data/rainfall.csv). To see how this was extracted
+see this [notebook](http://nbviewer.ipython.org/url/www.stanford.edu/class/stats191/notebooks/Rainfall_data.ipynb).
+
+1. Make a boxplot of the mean monthly rainfall (total annual rainfall divided by 12 months) rainfall in Northern California comparing the years Phil sees his shadow versus the years he does not. In Piazza, some people used February instead of mean monthly rainfall. This is OK as well.
+
+2. Construct a 93% confidence interval for the difference between the mean monthly rainfall (total annual rainfall divided by 12 months) in years Phil sees his shadow and years he does not. What assumptions / model are you using?
+
+3. Interpret the procedure used to construct in part 2. What do we really know about confidence intervals?
+
+4. At level, $\alpha = 0.05$ would you reject the null hypothesis that the average rainfall in Northern California during the month of February was the same in years Phil sees his shadow versus years he does not?
+
+5. What assumptions are you making in forming your confidence interval and in your hypothesis test?
+
+# Question 2
+
+In Question 1, part 4 above, you are asked to carry out a hypothesis test. In part 5, you are asked to justify your confidence interval and hypothesis test. Both are typically based on a $T$ statistic of some form. 
+
+1. Write functions in `R` to generate new data sets for the
+two different groups of years, calling them `shadow` and `noshadow`. The functions should be such that you 
+can specify the average rainfall within the two years separately, as well as the variability of the rainfall
+within those years (for example, you might use `rnorm` with different mean and variance parameters).
+
+2. Using your two functions above, simulate data under the null hypothesis that the data from `shadow` years is the same as the data from `noshadow` years, computing the $T$ statistic each time. Plot a density of a sample of 5000 such $T$ statistics, overlaying it with a "true" density that holds under the null hypothesis. Explain how these densities relate to the test you carried out in Question 1, part 4.
+
+3. Again using the same two functions, simulate data under the null hypothesis that the average rainfall from `shadow` years is the same as the average rainfall from `noshadow` years, allowing for the possibility that the variability of the average is different among the two groups. The function `t.test` allows specifying `var.equal` to be true or false. Compare the density of the $T$ statistics when the variability is not the same within the two groups. There are 4 possibilities (2 choices of variances for `shadow` and `noshadow`, and setting `var.equal` to be `TRUE` or `FALSE`). So we should see 4 histograms possibly comparing to the "true" density of part 2.
+
+# Question 3 
+
+The data set `walleye` in the package `alr4` (remember you may have to run `install.packages("alr4")`) of data
+measured on walleye fish in Wisconsin.
+
+1. Create a boxplot of `length`, for `age` in `5:8`.
+
+2. Compute the sample mean, sample standard deviation `length` in the four groups.
+
+3. Create a histogram of `length` within `age` of  `5:8` putting the plots in a 2x2 grid in one file.
+
+4. Compute a 95% confidence interval for the difference in `length` in years 5 and 7. What assumptions are you making?
+
+5. At level $\alpha=10\%$, test the null hypothesis that the average `length` in the group `age==5` is the same
+as the in the group `age==7`. What assumptions are you making? What can you conclude?
+
+6. Repeat the test in 5. using the function `lm`.
+
+# Question 4 (RABE)
+
+1. Use the `anscombe` data in `R`. Attach the table using the command `attach`.
+
+2.  Plot the 4 data sets `(x1,y1), (x2,y2), (x3,y3), (x4,y4)` on a 2-by-2 grid of plots using the commands `plot` and `par(mfrow=c(2,2))`. 
+Add the number of the dataset to each plot as the main title on each plot.
+
+3. Fit a regression model to the data sets:
+
+    a. `y1 ~ x1`
+
+    b. `y2 ~ x2`
+
+    c. `y3 ~ x3`
+
+    d. `y4 ~ x4`
+
+   using the command `lm`. Verify that all the fitted models have the exact same coefficients (up to numerical tolerance).
+
+4. Using the command `cor`, compute the sample correlation for each data set.
+
+5. Fit the same models in 3. but with the `x` and `y` reversed. Using the command `summary`, does anything about the results stay
+the same when you reverse `x` and `y`?
+
+6. Compute the $SSE, SST$ and $R^2$ value for each data set. Use the
+commands `mean, sum, predict` and / or `resid`. (Use the original models, i.e. `y1 ~ x1` so only 4 $SSE$ values)
+
+7. Using the command `abline`, replot the data, adding the regression line to each plot. (Use the original models, i.e. `y1 ~ x1` so only 4 plots)
+
+
+```R
+anscombe
+```
+
+
+```R
+
+```

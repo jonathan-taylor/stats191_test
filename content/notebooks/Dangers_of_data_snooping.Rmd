@@ -1,0 +1,75 @@
+
+## Data snooping
+
+We've talked about the need for having our hypotheses determined 
+*before* looking at the summary table. Here is a simple example to illustrate
+the danger of looking at summaries of the data before deciding which hypothesis to test.
+
+Below, I will create complete noise datasets but try to
+find "the best model". There is nothing
+wrong with finding the best model, what is wrong is trusting the
+results of the summary table **after having chosen this as the best model**.
+
+
+```{R}
+X = matrix(rnorm(50000), 50, 1000)
+X = scale(X)
+Y = rnorm(50)
+Z = (t(X) %*% (Y - mean(Y))) / sd(Y)
+print(summary(lm(Y ~ X[,1])))
+qqnorm(Z)
+```
+
+The collection of 1000 $T$ statistics looks pretty close to a normal (with 50 degrees of freedom). This is not surprising.
+
+Now, let's look at the largest $T$
+
+
+```{R}
+largest_T = order(abs(Z))[1000]
+print(summary(lm(Y ~ X[,largest_T])))
+```
+
+The $T$ statistic is much larger in absolute value than it should be.
+Let's repeat this experiment many times.
+
+
+```{R}
+largest_T_sim = function(printit=FALSE) {
+    X = matrix(rnorm(500), 50, 10)
+    X = scale(X)
+    Y = rnorm(50)
+    Z = (t(X) %*% (Y - mean(Y))) / sd(Y)
+    largest_T = order(abs(Z))[10]
+    if (printit) {
+        print(summary(lm(Y ~ X[,largest_T])))
+    }
+    return(summary(lm(Y ~ X[,largest_T]))$coef[2,4])
+}
+largest_T_sim(printit=TRUE)
+```
+
+We can do this many times and store the $p$-values. What will their distribution look like?
+
+
+```{R}
+Pval = c()
+for (i in 1:200) {
+    Pval = c(Pval, largest_T_sim())
+}
+plot(ecdf(Pval))
+```
+
+### Type I error
+
+How likely are we to conclude there is an effect if we use these $p$-values?
+
+
+```{R}
+ecdf(Pval)(0.05)
+```
+
+
+```{R}
+
+```

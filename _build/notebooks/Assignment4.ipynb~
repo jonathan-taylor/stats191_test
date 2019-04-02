@@ -1,0 +1,131 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "\n",
+    "**You may discuss homework problems with other students, but you have to prepare the written assignments yourself.**\n",
+    "\n",
+    "**Please combine all your answers, the computer code and the figures into one file.**\n",
+    "\n",
+    "**Grading scheme: 10 points per question, total of 30.**\n",
+    " \n",
+    "**Due date: March 7, 2017, 11:59PM.**"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Question 1\n",
+    "\n",
+    "\n",
+    "The data set [http://stats191.stanford.edu/data/asthma.table](http://stats191.stanford.edu/data/asthma.table) contains data on the number of admittances, `Y` to an emergency room for asthma-related problems in a hospital for several days. On each day, researchers also recorded the daily high temperature `T`, and the level of some atmospheric pollutants `P`.\n",
+    "\n",
+    "1. Fit a linear regression model to the observed counts as a linear function of `T` and `P`.\n",
+    "\n",
+    "2. Looking at the usual diagnostics plots, does the constant variance assumption seem justified?\n",
+    "\n",
+    "3. The outcomes are counts, for which a common model is the so-called Poisson model which says that\n",
+    "$\\text{Var}(Y) = E(Y)$. In words,  this says that the variance of the outcome is equal to the expected value of the outcome. Using a two-stage procedure, fit a weighted least squares regression to `Y` as a function of `T` and `P` with weights being inversely proportional to the fitted values of the initial model in 1.\n",
+    "\n",
+    "4. Looking at the usual diagnostics plots of this model (which takes the weights into account), does the constant variance assumption seem more reasonable? (The change may not be astonishing -- the point of the problem is to try using weighted least squares.)\n",
+    "\n",
+    "5. Using the weighted least squares fit, test the hypotheses at level $\\alpha = 0.05$ that \n",
+    "\n",
+    "    * the number of asthma cases is uncorrelated to the temperature allowing for pollutants;\n",
+    "    * the number of asthma cases is uncorrelated to the atmospheric pollutants allowing for temperature. \n",
+    "   \n",
+    "   Use a Bonferroni correction."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Question 2 (Based on RABE 8.4-8.6)\n",
+    "\n",
+    "The file \n",
+    "\n",
+    "    http://www1.aucegypt.edu/faculty/hadi/RABE5/Data5/P229-30.txt\n",
+    "\n",
+    "contains the values of the daily DJIA (Dow Jones Industrial Average)\n",
+    "for all the trading days in 1996. The variable `Time` denotes the trading day of the year. There were 262 trading days in 1996.\n",
+    "\n",
+    "1. Fit a linear regression model connecting `DJIA` with `Time using all 262 trading days in 1996. Is the linear trend model adequate? Examine the residuals for time dependencies, including a plot of the autocorrelation function.\n",
+    "\n",
+    "2. Regress `DJIA[t]` against its lagged by one version `DJIA[t-1]`. Is this an adequate model? Are there any evidences of autocorrelation in the residuals?\n",
+    "\n",
+    "3. The variability (volatility) of the daily DJIA is large, and to accomodate this phenomenon the analysis is crried out on the logarithm of the DJIA. Repeat 2. above using  `log(DJIA)` instead of `DJIA`.\n",
+    "\n",
+    "4.  A simplified version of the random walk model of stock prices states that the best prediction of the stock index at `Time=t` is the value of the index at `Time=t − 1`. Show that this corresponds to a simple linear regression model for 2. with an intercept of 0 and a slope of 1.\n",
+    "\n",
+    "5. Carry out the the appropriate tests of significance at level `α = 0.05` for 4. Test each coefficient separately ($t$-tests) , then test both simultaneously (i.e. an F test). \n",
+    "\n",
+    "6. The random walk theory implies that the first differences of the index (the difference between successive values) should be independently normally distributed with mean zero and constant variance. What kind of plot can be used to visually assess this hypothesis? Provide the plot."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 3\n",
+    "\n",
+    "In this question we will look at inference ($t$-tests and confidence\n",
+    "intervals) after model selection. We will use the `prostate` data from `ElemStatLearn`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "library(ElemStatLearn)\n",
+    "data(prostate)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "1. Fit the full model `lcavol + lweight + age + lbph + svi + lcp + pgg45` with response `lpsa`.\n",
+    "\n",
+    "2. Write a function in `R` that takes a regression model output by `lm` and creates a new design matrix\n",
+    "by adding some number `k` columns to the model's design matrix whose entries are filled with `rnorm`. The functions\n",
+    "`cbind`, `matrix`, `rnorm` and `as.data.frame` will be helpful here. The function should return a new `data.frame` with all the original variables as well as these `k` new ones.\n",
+    "\n",
+    "3. Try adding `k=20` columns to the design matrix. **After adding some additional `rnorm` noise to `lpsa` of variance about half the estimated variance from the model in step 1.,** run `step` in a forward direction with the largest model including these 20 new columns. A simple way to do this is along the lines of `full.lm = lm(lpsa.noisy ~ ., data=prostate)` (substituting your `data.frame` for `prostate` below. Then, you can put `list(upper=full.lm)` as the `scope` argument to `step` where `lpsa.noisy = lpsa + rnorm(length(lpsa), sd=?)` and an appropriate choice of `sd`.\n",
+    "\n",
+    "4. We know that all of the new variables have nothing to do with the real data so they must have coefficient 0\n",
+    "in these regression models we've created. Do the $p$-values you see after running `step` look as if they\n",
+    "come from regressions with 0 (i.e. null) coefficients? \n",
+    "\n",
+    "5. Write a function that repeats steps 3. & 4. returning a list with one entry `pvalues` for the null $p$-values and the other entry `intervals` for 95% confidence intervals for these null variables. Repeatedly call this function, storing the $p$-values until you have 1000 $p$-values and plot a histogram. Do they look as you'd expect? \n",
+    "\n",
+    "6. Repeat 5., this time checking which of the confidence intervals cover 0 (the true coefficient in this case). Is it roughly 95%?"
+   ]
+  }
+ ],
+ "metadata": {
+  "anaconda-cloud": {},
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.3.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}

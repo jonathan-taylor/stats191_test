@@ -1,0 +1,525 @@
+
+## Diagnostics for simple linear regression
+
+* Goodness of fit of regression: analysis of variance.
+
+* $F$-statistics.
+
+* Residuals.
+
+* Diagnostic plots.
+   
+
+
+
+```R
+options(repr.plot.width=5, repr.plot.height=4)
+```
+
+## Geometry of least squares
+
+Here are three pictures that help to describe different models we might fit.
+
+### The full model
+
+<img src="http://stats191.stanford.edu/figs/axes_simple_full.svg" width="800">
+
+
+
+### The full model
+
+* This picture is meant to depict the regression model
+$$
+Y = \beta_0 \cdot 1 + \beta_1 \cdot X + \epsilon.
+$$
+
+* The $\beta_0$ coefficient represents movement along the horizontal axis above, labelled $\pmb{1}$.
+
+* The $\beta_1$ coefficient represents movement along the axis $X$ above.
+
+* The vector $\hat{Y}$ is the vector of fitted values in the above model.
+
+### The reduced model
+
+<img src="http://stats191.stanford.edu/figs/axes_simple_reduced.svg" width="800">
+
+### The reduced model
+
+* This picture is meant to depict the regression model
+$$
+Y = \beta_0 \cdot 1 + \epsilon.
+$$
+
+* The $\beta_0$ coefficient represents movement along the horizontal axis above, labelled $\pmb{1}$.
+
+* Since $\beta_1=0$, we have assumed there is no movement along the $X$ axis.
+
+* The vector $\bar{Y} \cdot 1$ is the vector of fitted values in the above model.
+
+### Both models together
+
+<img src="http://stats191.stanford.edu/figs/axes_simple.svg" width="600"> 
+
+* The above picture tries to capture both models in one image.
+
+* There is a new vector: $\hat{Y} - \bar{Y} \cdot \pmb{1}$. This vector is the difference in fits between the two
+previous models.
+
+
+## Goodness of fit
+
+* The closer $\hat{Y}$ is to the ${1}$ axis, the less "variation" there is along the $X$ axis. 
+
+* This closeness can be measured by the length of the vector $\hat{Y}-\bar{Y} \cdot 1$.
+
+* The square of a vector's length is the sum of its elements squared. These quantities
+are usually referred to as *sums of squares*.
+
+### Sums of squares
+
+$$
+\begin{aligned}
+   SSE &= \sum_{i=1}^n(Y_i - \widehat{Y}_i)^2 = \sum_{i=1}^n (Y_i - \widehat{\beta}_0 - \widehat{\beta}_1 X_i)^2 \\
+   SSR &= \sum_{i=1}^n(\overline{Y} - \widehat{Y}_i)^2 = \sum_{i=1}^n (\overline{Y} - \widehat{\beta}_0 - \widehat{\beta}_1 X_i)^2 \\
+   SST &= \sum_{i=1}^n(Y_i - \overline{Y})^2 = SSE + SSR \\
+   R^2 &= \frac{SSR}{SST} = 1 - \frac{SSE}{SST} = \widehat{Cor}(\pmb{X},\pmb{Y})^2.
+   \end{aligned}
+$$
+
+
+
+* The quantity $SSE$, or *error sum of squares*, is the squared length of the vector $Y -  \hat{Y}$ which protrudes perpendicular to the plane.
+
+* The quantity $SSR$, or *regression sum of squares*, is the length of the vector $\hat{Y} - \bar{Y} \cdot 1$.
+
+* The quantity $SST$, or *total sum of squares*, is the length of the vector $Y - \bar{Y} \cdot 1$.
+
+* The quantity $R^2$ is a measure of the goodness of fit of the simple linear regression model. Values near 1 indicate
+much of the total variability in $Y$ is explained by the regression model.
+
+### Mean squares
+
+* Each sum of squares gets an extra bit of information associated to them, called their *degrees of freedom*.
+
+* Roughly speaking, the *degrees of freedom* can be determined by dimension counting.
+
+
+$$
+\begin{aligned}
+   MSE &= \frac{1}{n-2}\sum_{i=1}^n(Y_i - \widehat{Y}_i)^2 \\
+   MSR &= \sum_{i=1}^n(\overline{Y} - \widehat{Y}_i)^2 \\
+   MST &= \frac{1}{n-1}\sum_{i=1}^n(Y_i - \overline{Y})^2 \\
+   \end{aligned}
+$$
+
+### Mean squares
+
+* The $SSE$ has $n-2$ degrees of freedom  because it is the squared length of a vector that lies in $n-2$ dimensions. To see this, note that it is
+perpendicular to the 2-dimensional plane formed by the $X$ axis and the $1$ axis.
+
+* The $SST$ has $n-1$ degrees of freedom because it is the squared length of a vector that lies in $n-1$ dimensions. In this case, this vector is perpendicular to the $1$ axis.
+
+* The $SSR$ has 1 degree of freedom because it is the squared length of a vector that lies in the 2-dimensional plane but is perpendicular to the $1$ axis.
+
+
+
+### A different visualization
+
+These sums of squares can be visualized by other means as well. 
+We will illustrate with a synthetic dataset.
+
+
+```R
+X = seq(0, 20, length = 21)
+Y = 0.5 * X + 1 + rnorm(21)
+Y.lm = lm(Y ~ X)
+meanY = mean(Y)
+Yhat = predict(Y.lm)
+plot(X,Y, pch=23, bg='red', cex=2)
+```
+
+The total sum of squares, 
+$SST$, is the sum of the squared
+differences between the *Y* values and the sample mean of the *Y*
+values.
+
+
+```R
+plot(X, Y, pch = 23, bg = "red", main='Total sum of squares', cex=2)
+abline(Y.lm, pch=23, col='green', lwd=2)
+abline(h = meanY, col = "yellow", lwd = 2)
+for (i in 1:21) {
+      points(X[i], meanY, pch = 23, bg = "yellow")
+      lines(c(X[i], X[i]), c(Y[i], meanY))
+}
+
+```
+
+The error sum of squares, $SSE$, is the sum of the squared
+differences between the $Y$ values and the $\hat{Y}$ values, i.e. the
+fitted values of the regression model.
+
+
+
+```R
+plot(X, Y, pch = 23, bg = "red", main="Error sum of squares", cex=2)
+abline(Y.lm, col = "green", lwd = 2)
+for (i in 1:21) {
+    points(X[i], Yhat[i], pch = 23, bg = "green")
+    lines(c(X[i], X[i]), c(Y[i], Yhat[i]))
+}
+abline(h = meanY, col = "yellow", lwd = 2)
+```
+
+Finally, the regression sum of squares, $SSR$ is the sum of the squared
+differences between the $\hat{Y}$ values and the sample mean of
+the $Y$ values.
+
+
+```R
+plot(X, Y, pch = 23, bg = "red", main="Regression sum of squares", cex=2)
+abline(Y.lm, col = "green", lwd = 2)
+abline(h = meanY, col = "yellow", lwd = 2)
+for (i in 1:21) {
+     points(X[i], Yhat[i], pch = 23, bg = "green")
+     points(X[i], meanY, pch = 23, bg = "yellow")
+     lines(c(X[i], X[i]), c(meanY, Yhat[i]))
+}
+
+```
+
+## Definition of $R^2$
+
+As noted above, if the regression model fits very well, then $SSR$ will be
+large relative to $SST$. The $R^2$ score is just the
+ratio of these sums of squares.
+
+We'll verify this on the `wages` data.
+
+
+```R
+url = "http://stats191.stanford.edu/data/wage.csv"
+wages = read.table(url, sep = ",", header = T)
+wages.lm = lm(logwage ~ education, data=wages)
+```
+
+Let's verify our claim $SST=SSE+SSR$:
+
+
+```R
+SSE = sum(resid(wages.lm)^2)
+SST = sum((wages$logwage - mean(wages$logwage))^2)
+SSR = sum((mean(wages$logwage) - predict(wages.lm))^2)
+data.frame(SST, SSE + SSR)
+
+```
+
+The $R^2$ is also closely related to the $F$ statistic
+reported as the goodness of fit in *summary* of *lm*.
+
+
+```R
+F = (SSR / 1) / (SSE / wages.lm$df)
+print(F)
+summary(wages.lm)
+```
+
+In other words, for simple linear regression that `F-statistic` is
+$$
+F = \frac{(n-2) \cdot R^2}{1-R^2}
+$$
+where $n-2$ is `wages.lm$df`.
+
+
+```R
+2176*0.1351 / (1 - 0.1351)
+
+```
+
+Finally,  $R=\sqrt{R^2}$ is called the (absolute) *correlation coefficient* because it is equal
+to the absolute value of sample correlation coefficient of $X$ and $Y$.
+
+
+```R
+cor(wages$education, wages$logwage)^2
+```
+
+## $F$-statistics
+
+After a $t$-statistic, the next most commonly encountered statistic is a $\chi^2$ statistic, or its closely related cousin,
+the $F$ statistic.
+
+* Roughly speaking, an $F$-statistic is a ratio of *sample variances*: it has a numerator, $N$, 
+ and a denominator, $D$ that are independent.
+ 
+ *  Let $$N \sim \frac{\chi^2_{\rm num} }{ df_{{\rm num}}}, \qquad D \sim \frac{\chi^2_{\rm den} }{ df_{{\rm den}}}$$
+ and define
+ $$
+ F = \frac{N}{D}.
+ $$
+ 
+ * We say $F$ has an $F$ distribution with parameters $df_{{\rm num}}, df_{{\rm den}}$ and write $F \sim F_{df_{{\rm num}}, df_{{\rm den}}}$
+
+### $F$ statistic for simple linear regression
+
+
+* The ratio $$
+   F=\frac{SSR/1}{SSE/(n-2)} = \frac{(SST-SSE)/1}{SSE/(n-2)} = \frac{MSR}{MSE}$$
+   can be thought of as a *ratio of a difference in sums of squares normalized by our "best estimate" of variance* .
+
+* In fact, under $H_0:\beta_1=0$, $$
+   F \sim F_{1, n-2}
+   $$
+because $$
+   \begin{aligned}
+   SSR &= \|\hat{Y} - \bar{Y} \cdot 1\|^2 \\
+   SSE &= \|Y - \hat{Y}\|^2
+   \end{aligned}
+   $$
+   and from our picture, these vectors are orthogonal.
+   
+* The null hypothesis $H_0:\beta_1=0$ implies that $SSR \sim \chi^2_1 \cdot \sigma^2$.
+
+### Relation between $F$ and $t$ statistics.
+
+* If $T \sim t_{\nu}$, then
+   $$
+   T^2 \sim \frac{N(0,1)^2}{\chi^2_{\nu}/\nu} \sim \frac{\chi^2_1/1}{\chi^2_{\nu}/\nu}.$$
+
+* In other words, the square of a $t$-statistic is an $F$-statistic.
+   Because it is always positive, an $F$-statistic has no *direction* associated with it.
+ 
+* In fact 
+   $$
+   F = \frac{MSR}{MSE} = \frac{\widehat{\beta}_1^2}{SE(\widehat{\beta}_1)^2}.$$
+Let's check this in our example.
+
+
+```R
+summary(wages.lm)
+```
+
+The $t$ statistic for *education* is the $t$-statistic for the parameter $\beta_1$ under $H_0:\beta_1=0$. Its value
+is 18.4 above. If we square it, we should get about the same as the *F-statistic*.
+
+
+```R
+18.44**2
+```
+
+### Interpretation of an $F$-statistic
+
+* In regression, the numerator is usually a difference in *goodness of fit* of two  (nested) models.
+
+* The denominator is $\hat{\sigma}^2$ -- an estimate of $\sigma^2$.
+
+* In our example today: the bigger model is the simple linear regression model, the smaller is the model
+ with constant mean (one sample model).
+
+* If the $F$ is large, it says that the *bigger*  model explains a lot more variability in $Y$  (relative to $\sigma^2$) than the smaller one.
+
+
+### Analysis of variance
+
+- The equation
+$$
+SST = SSE + SSR
+$$
+is a *decomposition* of the total variability into separate pieces.
+
+- This decomposition is often referred to as an **analysis of variance (ANOVA)**.
+
+### Interpretation of an $F$-statistic
+
+<img src="http://stats191.stanford.edu/figs/axes_simple.svg" width="600"> 
+
+* If the null hypothesis is true, $\hat{Y}$ will be close to $\bar{Y} \cdot 1$. 
+
+* How close? We must compare to the size of the noise, i.e. $\sigma^2$.
+
+* Not knowing $\sigma^2$, we substitute our estimate $\hat{\sigma}^2$.
+
+
+### The $F$-statistic for simple linear regression revisited
+
+The $F$ statistic should compare two models. What are these models?
+
+* The *full model* would be
+$$
+(FM) \qquad  Y_i = \beta_0 + \beta_1 X_i + \varepsilon_i 
+$$
+
+* The *reduced model* would be
+$$
+(RM) \qquad  Y_i = \beta_0 + \varepsilon_i 
+$$
+
+* The $F$-statistic then has the form
+$$
+F=\frac{(SSE(RM) - SSE(FM)) / (df_{RM} - df_{FM})}{SSE(FM) / df_{FM}}
+$$
+
+
+### The $F$-statistic for simple linear regression revisited
+
+* The *null hypothesis* is 
+$$
+H_0: \text{reduced model (RM) is correct}.
+$$
+
+* The usual $\alpha$ rejection rule would be to reject $H_0$ if the $F_{\text{obs}}$ the  observed $F$ statistic is greater than
+$F_{1,n-2,1-\alpha}$. 
+
+* In our case, the observed $F$ was 340, $n-2=2176$ and the appropriate 5% threshold is computed below to be 3.85. Therefore, we strongly
+reject $H_0$.
+
+
+```R
+qf(0.95, 1, 2176)
+```
+
+## Diagnostics for simple linear regression
+
+While we have used a particular model for our data, it may not be correct. It is important that we have
+some tools that help us determine whether or model is reasonable or not.
+
+
+### What can go wrong?
+
+* Using a linear regression function can be wrong: maybe regression function should be quadratic.
+
+* We assumed independent Gaussian errors with the same variance. This may be incorrect.
+    - The errors may not be normally distributed.
+    - The errors may not be independent.
+    - The errors may not have the same variance.
+    
+* Detecting problems is more *art* then *science*, i.e.
+   we cannot *test* for all possible problems in a regression model.
+   
+The basic idea of most diagnostic measures is the following. *If the model is correct then
+   residuals $e_i = Y_i -\widehat{Y}_i, 1 \leq i \leq n$ should look like a sample of
+   (not quite independent) $N(0, \sigma^2)$ random variables.*
+
+### A poorly fitting model
+
+Here is an example of a poorly fitting model. It will turn out that there is a simple fix for this dataset: a model that
+includes a quadratic term for $X$ will turn out to have a much better fit. Finding this
+fix in practice can be difficult.
+
+
+
+```R
+y = anscombe$y2 + rnorm(length(anscombe$y2)) * 0.45
+x = anscombe$x2
+plot(x, y, pch = 23, bg = "orange", cex = 2, ylab = "Y",
+     xlab = "X")
+simple.lm = lm(y ~ x)
+abline(simple.lm, lwd = 2, col = "red", lty = 2)
+```
+
+Let's take a look at the residuals from this model. Patterns in these residual plots may suggest something like a quadratic effect is missing, but they can also suggest some sort of serial dependence in the random errors. We will discuss this later, when we discuss correlated-errors.
+
+
+```R
+plot(x, resid(simple.lm), ylab = "Residual", xlab = "X", pch = 23,
+        bg = "orange", cex = 2)
+abline(h = 0, lwd = 2, col = "red", lty = 2)
+```
+
+We will add a quadratic term to our model. This is our first example of a *multiple linear regression model*.
+
+
+```R
+quadratic.lm = lm(y ~ poly(x, 2))
+Xsort = sort(x)
+plot(x, y, pch = 23, bg = "orange", cex = 2, ylab = "Y",
+     xlab = "X")
+lines(Xsort, predict(quadratic.lm, list(x = Xsort)), col = "red", lty = 2,
+      lwd = 2)
+```
+
+The residuals of the quadratic model have no apparent pattern in them, suggesting this is a better fit than the simple linear regression model.
+
+
+```R
+plot(x, resid(quadratic.lm), ylab = "Residual", xlab = "X", pch = 23,
+        bg = "orange", cex = 2)
+abline(h = 0, lwd = 2, col = "red", lty = 2)
+```
+
+### Assessing normality of errors
+
+Another common diagnostic plot is the *qqplot* where *qq* stands for *Quantile-Quantile*. Roughly speaking, a qqplot is designed to see if the quantiles of two distributions match. 
+
+* The function *qqnorm* can be used to ascertain if a sample of numbers are roughly normally distributed. If the points lie on the diagonal line, this is evidence that the sample is normally distributed. Various departures from the diagonal indicate skewness, asymmetry, etc.
+
+* If $e_i, 1\leq i \leq n$ were really a sample of
+$N(0, \sigma^2)$ then their sample quantiles should be close to the
+sample quantiles of the $N(0, \sigma^2)$ distribution.
+
+The $qqnorm$ plot is a plot of
+   $$
+   e_{(i)}  \ {\rm vs.} \  \mathbb{E}(\varepsilon_{(i)}), \qquad 1 \leq i \leq n.$$
+   where $e_{(i)}$ is the $i$-th smallest residual (order statistic) and
+   $\mathbb{E}(\varepsilon_{(i)})$ is the expected value for independent $\varepsilon_i$'s $\sim N(0,\sigma^2)$.
+
+
+```R
+qqnorm(resid(simple.lm), pch = 23, bg = "orange", cex = 2)
+```
+
+
+```R
+qqnorm(resid(quadratic.lm), pch = 23, bg = "orange", cex = 2)
+```
+
+In these two examples, the qqplot does not seem vastly different, even though we know the simple model is incorrect in this case. This indicates that several diagnostic tools can be useful in assessing a model.
+
+### Assessing constant variance assumption
+
+One plot that is sometimes used to determine whether the variance is constant or not is a plot of 
+$X$ against $e=Y-\hat{Y}$. If there is a pattern to the spread in this plot, it may indicate that the variance
+changes as a function of $X$. In our earlier plots, we noticed a trend in this plot, not necessarily
+evidence of changing variance.
+
+The dataset below, taken from some work done with Dr. Robert Shafer here at Stanford http://hivdb.stanford.edu, plots HIV virus load against a score related to the the genetic makeup of a patient’s virus shows clear non-constant variance. It also provides a clear example of an outlier, or a point that is a clear departure from the model.
+
+
+```R
+url = 'http://stats191.stanford.edu/data/HIV.VL.table'
+
+viral.load = read.table(url, header=T)
+attach(viral.load)
+
+plot(GSS, VL, pch=23, bg='orange', cex=2)
+viral.lm = lm(VL ~ GSS)
+abline(viral.lm, col='red', lwd=2)
+```
+
+
+```R
+good = (VL < 200000)
+plot(GSS, VL, pch=23, bg='orange', cex=2)
+viral.lm.good = lm(VL ~ GSS, subset=good)
+abline(viral.lm.good, col='green', lwd=2)
+```
+
+When we plot the residuals against the fitted values for this model (even with the outlier removed) we see that the variance
+clearly depends on $GSS$. They also do not seem symmetric around 0 so perhaps the Gaussian model is not appropriate.
+
+
+```R
+plot(GSS[good], resid(viral.lm.good), pch=23,
+     bg='orange', cex=2, xlab='GSS', ylab='Residual')
+abline(h=0, lwd=2, col='red', lty=2)
+```
+
+### Outliers
+
+Outliers can be obvious to spot (or not) but very difficult to define rigorously.
+Roughly speaking, they points where the model really does not fit.
+
+They might correspond to mistakes in data transcription, lab 
+errors, who knows? If possible, they should be identified and (hopefully) explained.
+
+Later, we'll talk about some formal ways to detect outliers.

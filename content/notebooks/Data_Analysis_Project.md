@@ -1,0 +1,73 @@
+
+# Data Analysis Project
+
+This project is a full analysis of a moderately large dataset using the tools we have learnt throughout the course. 
+
+**The project should be done individually. The project is due Sunday March 17 at 11:59 PM.
+**
+
+The data for your
+final project is based on real estate sales in Ames, Iowa in the years 2006- 2010. A description of the dataset can be found [here](http://stats191.stanford.edu/data/amesdoc.txt).
+
+I have created a [subsample](http://www.stanford.edu/class/stats191/data/ames2000_NAfix.csv) of 2000 cases for you to use after fixing some missing values.
+
+## Split your data
+
+To begin, randomly split the data into a two sets of equal size -- 1000 for selecting a model, with a final 1000 for validation, and reporting confidence intervals for the final effects. For reproducibility of your results, pick and store an integer seed to use for the split and any subsequent possibly randomization as in cross-validation, etc. For simplicity, I'll choose the seed `1` here. You need not use the same seed, choose one and have this line as the first line in your analysis.
+
+
+
+```R
+set.seed(1); rnorm(1)
+```
+
+
+```R
+set.seed(1); rnorm(1)
+```
+
+## Main task
+
+Your task is to build a model to predict `SalePrice`.  based on the remaining variables. 
+
+** The final project should be no more than 10 pages.**
+** Beware: the data set is large enough so simple stepwise model building procedures may be very slow.**
+
+The project should have the following parts:
+
+1. *The study:* In this section, you should give a description of the study underlying their dataset. Possible questions to be answered are the following:
+
+    - What field does the data come from?
+    - What are the goals of the study? Are there any effects of particular interest?
+    - How might these goals be answered, i.e. tests / confidence intervals?
+    
+2. *The data:* In this section, you should describe the data set and possibly do some exploratory data analysis. For instance:
+
+    - How are the predictor variables spread out? Are there any noteworthy features to their spread that could be highly influential observations?
+    - Are any of the predictor variables highly correlated?
+    
+3. *The models:* In this section, you should develop a model for the data that will allow them to answer some of the specific goals of the study. Possible questions to be addressed here are the following:
+
+    - Which predictor variables, if any, should be included in the model a priori?
+    - Are there any interactions that should be considered for inclusion in the model?
+    - Are there any three way interactions that should be considered?
+    - Are there any interactions that should NOT be considered?
+    
+4. *Results:* In this section, you should report their results obtained by fitting the proposed models in the previous section. Emphasis should be placed on clarity, as if the report were a statistical consultant’s report for a nonstatistician. For instance, loads of `R` output would, in general, not be acceptable. Plots and well-organized tables are good things to have in this section. Possible questions to be addressed here are the following:
+
+    - What is the final regression model for the data?
+    - How was this model obtained, i.e. forward stepwise search (to be seen in class)?
+    - Using the standard diagnostic tests, does the model appear to fit the data well?
+    - What are the final confidence intervals for the effects of interest mentioned in the study section? Use your validation data to construct these intervals. Do these intervals seem very sensitive to the choice of model (i.e. do they vary widely for different choices of variables in the model)? 
+    - What is your estimated prediction accuracy for your model? (Evaluated on the validation set).
+    - Compare the intervals constructed using your final selected model fit to the validation set to the same intervals constructed on the training set. Are they very different? Which do you believe more?
+    
+5. *Appendix:* In this section, you should attach a final, editied, copy of the R code used in the analysis. Ideally, there will be comments in the file, i.e. lines beginning with “#” to clarify what each part of the code is doing.
+
+6. *Acknowledgements:*  If you consult outside sources that refer to this data set, you should cite these as references, and describe what you used from each source. Sources include material found on the internet, journal articles and books.
+
+There are no right or wrong answers for many of these questions. The goal of the project is to try to mimic the analysis of a real data set that you might come across in your own field of application.
+
+## References
+
+Dean De Cock. Ames, Iowa: Alternative to the Boston Housing Data as an End of Semester Regression Project. Journal of Statistical Education, 19(3), 2011.

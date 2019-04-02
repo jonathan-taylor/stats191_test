@@ -1,0 +1,237 @@
+
+# Bootstrapping linear regression
+
+- We've talked about correcting our regression estimator in two contexts: WLS (weighted least squares) and GLS.
+
+- Both require a model of the errors for the correction.
+
+- In both cases, we use a two stage procedure to "whiten" the data and use the OLS model on the "whitened" data.
+
+- **What if we don't have a model for the errors?**
+
+- **We will use the <a href="https://en.wikipedia.org/wiki/Bootstrapping_(statistics)">bootstrap</a>!**
+
+# Bootstrapping linear regression
+
+- Suppose we think of the pairs $(X_i, Y_i)$ coming from some distribution $F$ -- this is a distribution
+for *both the features and the outcome.*
+
+- Note: this is different than our usual model up to this point. Our usual model says that
+$$
+Y_{n \times 1} | X_{n \times p} \sim N(X\beta, \sigma^2 I)
+$$
+(or our WLS / GLS models for error).
+
+- **We have essentially treated $X$ as fixed.**
+
+- In our usual model, $\beta$ is clearly defined. What is $\beta$ without this assumption?
+
+# Population least squares
+
+- For our distribution $F$, we can define
+$$
+E_F[\pmb{X}\pmb{X}^T], \qquad E_F[\pmb{X} \cdot \pmb{Y}]
+$$
+where $(\pmb{X}, \pmb{Y}) \sim F$ leading to
+$$
+\beta(F) = \left(E_F[\pmb{X}\pmb{X}^T]\right)^{-1} E_F[\pmb{X} \cdot \pmb{Y}].
+$$
+
+- In fact, our least squares estimator is
+$\beta(\hat{F}_n)$ where $\hat{F}_n$ is the *empirical distribution* of our sample of $n$ observations from $F$.
+
+# Population least squares
+
+- As we take a larger and larger sample, 
+$$
+\beta(\hat{F}_n) \to \beta(F)
+$$
+and
+$$
+n^{1/2}(\beta(\hat{F}_n) - \beta(F)) \to N(0, \Sigma(F))
+$$
+for some covariance matrix $\Sigma=\Sigma(F)$ depending only on $F$.
+
+- Recall the variance of OLS estimator (with $X$ fixed):
+$$
+(X^TX)^{-1} \text{Var}(X^TY) (X^TX)^{-1}.
+$$
+
+- With $X$ random and $n$ large this is approximately
+$$
+\frac{1}{n} \left(E_F[\pmb{X}\pmb{X}^T] \right)^{-1} \text{Var}_F(\pmb{X} \cdot \pmb{Y}) \left(E_F[\pmb{X}\pmb{X}^T] \right)^{-1}.
+$$
+
+# Population least squares
+
+- In usual model, $\text{Var}(X^TY) = \sigma^2 X^TX \approx n E_F[\pmb{X} \pmb{X}^T]$. In WLS model it is $X^TW^{-1}X$ (or, rather, its expectation)
+where $W$ might come from some model.
+
+- **In this setting we will use OLS estimate -- but correct its variance!**
+
+- **Can we get our hands on $\text{Var}(X^TY)$ or $\text{Var}(\hat{\beta})$ without a model?**
+
+# Nonparametric bootstrap in a nutshell
+
+## Basic algorithm for pairs
+
+There are many variants of the bootstrap, most using roughly this structure
+
+    boot_sample = c()
+    for (b in 1:B) {
+        idx_star = sample(1:n, n, replace=TRUE)
+        X_star = X[idx_star,]
+        Y_star = Y[idx_star]
+        boot_sample = rbind(boot_sample, coef(lm(Y_star ~ X_star)))
+    }
+    cov_beta_boot = cov(boot_sample)
+    
+   
+
+# Nonparametric bootstrap in a nutshell
+
+- Estimated covariance `cov_beta_boot` can be used to estimate
+$\text{Var}(a^T\hat{\beta})$ for confidence intervals
+or general linear hypothesis tests.
+
+- Software does something slightly different -- using percentiles of the bootstrap sample: *bootstrap percentile intervals*.
+
+# Bootstrapping regression
+
+
+### [Reference for more R examples](https://socialsciences.mcmaster.ca/jfox/Books/Companion/appendices/Appendix-Bootstrapping.pdf)
+
+
+```R
+library(car)
+n = 50
+X = rexp(n)
+Y = 3 + 2.5 * X + X * (rexp(n) - 1) # our usual model is false here! W=X^{-2}
+Y.lm = lm(Y ~ X)
+confint(Y.lm) 
+```
+
+
+```R
+pairs.Y.lm = Boot(Y.lm, coef, method='case', R=1000)
+confint(pairs.Y.lm, type='norm') # using bootstrap SE
+confint(pairs.Y.lm, type='perc') # using percentiles
+```
+
+## Using the `boot` package
+
+- The `Boot` function in `car` is a wrapper around the more general `boot` function. 
+
+- Here is an example using `boot`.
+
+
+```R
+library(boot)
+D = data.frame(X, Y)
+bootstrap_stat = function(D, bootstrap_idx) {
+    return(summary(lm(Y ~ X, data=D[bootstrap_idx,]))$coef[,1])
+}
+boot_results = boot(D, bootstrap_stat, R=500)
+confint(boot_results, type='norm') # using bootstrap SE
+confint(boot_results, type='perc') # using percentiles
+```
+
+## How is the coverage?
+
+- First we'll use the standard regression model but errors that aren't Gaussian.
+
+
+```R
+noise = function(n) { return(rexp(n) - 1) }
+
+simulate_correct = function(n=100, b=0.5) {
+    X = rexp(n)
+    Y = 3 + b * X + noise(n)
+    Y.lm = lm(Y ~ X)
+
+    # parametric interval
+    int_param = confint(Y.lm)[2,]
+    
+    # pairs bootstrap interval   
+    pairs.Y.lm = Boot(Y.lm, coef, method='case', R=1000)
+    pairs_SE = sqrt(cov(pairs.Y.lm$t)[2,2]) # $t is the bootstrap sample
+    int_pairs = c(coef(Y.lm)[2] - qnorm(0.975) * pairs_SE,
+                  coef(Y.lm)[2] + qnorm(0.975) * pairs_SE)
+
+    result = c((int_param[1] < b) * (int_param[2] > b),
+              (int_pairs[1] < b) * (int_pairs[2] > b))
+    names(result) = c('parametric', 'bootstrap')
+    return(result)
+}
+```
+
+## Check one instance
+
+
+```R
+simulate_correct()
+```
+
+## Check coverage
+
+
+```R
+nsim = 100
+coverage = c()
+for (i in 1:nsim) {
+    coverage = rbind(coverage, simulate_correct())
+}
+print(apply(coverage, 2, mean))
+```
+
+## Misspecified model
+
+- Now we make data for which we might have used WLS **but we don't have a model for the weights!**
+
+
+```R
+simulate_incorrect = function(n=100, b=0.5) {
+    X = rexp(n)
+    # the usual model is 
+    # quite off here -- Var(X^TY) is not well
+    # approximated by sigma^2 * X^TX...
+    Y = 3 + b * X + X * noise(n)
+    Y.lm = lm(Y ~ X)
+
+    # parametric interval
+    int_param = confint(Y.lm)[2,]
+    
+    # pairs bootstrap interval
+    pairs.Y.lm = Boot(Y.lm, coef, method='case', R=1000)
+    pairs_SE = sqrt(cov(pairs.Y.lm$t)[2,2]) # $t is the bootstrap sample of coefficients
+                                            # we want the 2nd coefficient
+    int_pairs = c(coef(Y.lm)[2] - qnorm(0.975) * pairs_SE,
+                  coef(Y.lm)[2] + qnorm(0.975) * pairs_SE)
+
+    result = c((int_param[1] < b) * (int_param[2] > b),
+              (int_pairs[1] < b) * (int_pairs[2] > b))
+    
+    names(result) = c('parametric', 'bootstrap')
+    return(result)
+}
+```
+
+## Check one instance
+
+
+```R
+simulate_incorrect()
+```
+
+## Check coverage
+
+
+```R
+nsim = 100
+coverage = c()
+for (i in 1:nsim) {
+    coverage = rbind(coverage, simulate_incorrect())
+}
+
+print(apply(coverage, 2, mean))
+```
